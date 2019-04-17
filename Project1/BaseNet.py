@@ -11,7 +11,7 @@ class BaseNet(nn.Module):
         
     def forward(self, x):
         # every 1x14x14 image is reshaped as a 196 1D tensor
-        x = x.reshape((100, -1))
+        x = x.reshape((len(x), -1))
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
