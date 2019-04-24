@@ -4,6 +4,7 @@ from torch.nn import functional as F
 class ConvNet1_1C(nn.Module):
     def __init__(self, nb_classes, nb_hidden=200):
         super(ConvNet1_1C, self).__init__()
+        self.name = "ConvNet1_1C"
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
         self.fc1 = nn.Linear(256, nb_hidden)
@@ -19,6 +20,7 @@ class ConvNet1_1C(nn.Module):
 class ConvNet1_2C(nn.Module):
     def __init__(self, nb_classes, nb_hidden=200):
         super(ConvNet1_2C, self).__init__()
+        self.name = "ConvNet1_2C"
         self.conv1 = nn.Conv2d(2, 32, kernel_size=3)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
         self.fc1 = nn.Linear(256, nb_hidden)
