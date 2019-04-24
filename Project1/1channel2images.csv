@@ -1,0 +1,2 @@
+Model,Number of parameters,Training time,Number of missidentified digits,Number of errors in prediction
+BaseNet1C,81610,13.83,1693,56
