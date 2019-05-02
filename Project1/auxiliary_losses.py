@@ -12,13 +12,20 @@ nb_classes_digits = 10
 nb_classes_pairs = 2
 
 def train_model_aux(model, train_input, train_target, train_classes, optimizer, mini_batch_size=1000, nb_epochs=300):
+    
     criterion1 = torch.nn.CrossEntropyLoss()
     criterion2 = torch.nn.BCEWithLogitsLoss()
     
+    alpha = 0.3
+    
+    print("train_input.shape = ", train_input.shape)
+    
     train_target = train_target.type(torch.FloatTensor).view(-1, 1)
-    print("train_classes = ", train_classes[:5])
-    train_classes = train_classes.flatten() # the target are the class labels 
-    print("train_classes = ", train_classes[:5])
+    
+    print("train_classes.shape = ", train_classes.shape)
+    print("train_classes[0] = ", train_classes[0])
+
+    print("train_target.shape = ", train_target.shape)
     nb_samples = len(train_input)
     
     since = time.time()
@@ -78,17 +85,18 @@ def train_model_aux(model, train_input, train_target, train_classes, optimizer, 
 
 ######################################################################
 
-def test_model_aux(model, test_input, test_target, test_classes, mini_batch_size=1000):
+def test_model_aux(model, test_input, test_target, mini_batch_size=1000):
     model.eval()
-    train_target = train_target.type(torch.FloatTensor).view(-1, 1)
-    train_classes = train_classes.flatten()
-
+   
     # Number of wrong predictions (first digit less than or equal to the second)
-    test_output = model(test_input)
+    _, _, test_output = model(test_input)
     output_to_prediction = torch.ge(torch.sigmoid(test_output), 0.5).flatten()
+    print("output_to_pred = ", output_to_prediction[:10])
+    print("target = ", test_target[:10])
     nb_errors_pairs = torch.sum(output_to_prediction != test_target.type(torch.ByteTensor)).item()
+    print("nb_errors = ", nb_errors_pairs)
     acc_pairs = 1 - nb_errors_pairs / len(test_input)
-    
+    print("acc_pairs = ", acc_pairs)
     return acc_pairs
 
 ######################################################################
@@ -118,13 +126,11 @@ def check_overwrite(filename, model, row_to_write):
 def write_to_csv(filename, model, test_results):
     nb_params = count_parameters(model)
     row = [model.name, nb_params, round(test_results[0], 2), 
-           round(test_results[2], 4), round(test_results[3], 4), 
-           round(test_results[4], 4), round(test_results[5], 4)]
+           round(test_results[2], 4), round(test_results[3], 4)]
     
     try: file = open(filename, 'r')
     except FileNotFoundError:
         csvData = [['Model', 'Number of parameters', 'Training time', 
-                    'Mean digits accuracy (test set)', 'Std digits accuracy', 
                     'Mean accuracy (test set)', 'Std accuracy']]
         with open('auxiliary_losses.csv', 'w') as csvFile:
             writer = csv.writer(csvFile)
@@ -146,6 +152,7 @@ def compute_properties(lst):
     variance = sum([(e-mean)**2 for e in lst]) / (len(lst)-1)
     return mean, variance ** (1/2)
 
+
 def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target, train_classes, test_input, test_target, test_classes, mini_batch_size=1000, nb_epochs=300):
     list_time = []
     list_acc_pairs = []
@@ -157,7 +164,7 @@ def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target,
         model, time_elapsed = train_model_aux(model, train_input, train_target, train_classes, optimizer, mini_batch_size=mini_batch_size, nb_epochs=nb_epochs)
         list_time.append(time_elapsed)
         
-        acc_pairs = test_model_aux(model, test_input, test_target, test_classes)
+        acc_pairs = test_model_aux(model, test_input, test_target)
         list_acc_pairs.append(acc_pairs)
         
     mean_time, std_time = compute_properties(list_time)

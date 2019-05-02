@@ -1,0 +1,2 @@
+Model,Number of parameters,Training time,Mean accuracy (test set),Std accuracy
+Incept1,175027,160.97,0.6915,0.0021
