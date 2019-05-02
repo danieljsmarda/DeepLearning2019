@@ -19,8 +19,9 @@ def prep_input_vanilla(input_):
 
 ######################################################################
 
-def train_model_1C(model, train_input, train_classes, optimizer, mini_batch_size=1000, criterion=torch.nn.CrossEntropyLoss(), nb_epochs=300):
+def train_model_1C(model, train_input, train_classes, optimizer, mini_batch_size=1000, nb_epochs=300):
     """ Network is a classifier: it is trained to predict the digit from the image """
+    criterion = torch.nn.CrossEntropyLoss()
     train_input = prep_input_vanilla(train_input)
     train_target = train_classes.flatten() # the target are the class labels 
     nb_samples = len(train_input)
@@ -46,7 +47,6 @@ def train_model_1C(model, train_input, train_classes, optimizer, mini_batch_size
                     output = model(train_input.narrow(0, b, mini_batch_size))
                     target = train_target.narrow(0, b, mini_batch_size)
                     
-                    # the nn.CrossEntropyLoss expects a class index as the target for each value
                     loss = criterion(output, target)
                     
                     if phase == 'train':

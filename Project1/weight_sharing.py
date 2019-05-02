@@ -8,7 +8,8 @@ import copy
 
 """ FRAMEWORK FOR WEIGHTSHARING """
 
-def train_model(model, train_input, train_target, optimizer, mini_batch_size=1000, criterion=torch.nn.CrossEntropyLoss(), nb_epochs=300):
+def train_model_ws(model, train_input, train_target, optimizer, mini_batch_size=1000, nb_epochs=300):
+    criterion = torch.nn.CrossEntropyLoss()
     train_target = train_target.flatten() # the target are the class labels 
     nb_samples = len(train_input)
     
@@ -31,9 +32,7 @@ def train_model(model, train_input, train_target, optimizer, mini_batch_size=100
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     output = model(train_input.narrow(0, b, mini_batch_size))
-                    #print("output = ", output[:10])
                     target = train_target.narrow(0, b, mini_batch_size)
-                    #print("target = ", target[:10])
                     loss = criterion(output, target)
                     
                     if phase == 'train':
@@ -42,7 +41,6 @@ def train_model(model, train_input, train_target, optimizer, mini_batch_size=100
                         
                 running_loss += loss.item() * train_input.size(0)
                 output_to_prediction = torch.max(output, 1)[1]
-                #print("output_to_pred = ", output_to_prediction[:10])
                 running_corrects += torch.sum(output_to_prediction == target)       
 
             epoch_loss = running_loss / nb_samples
@@ -67,7 +65,7 @@ def train_model(model, train_input, train_target, optimizer, mini_batch_size=100
 
 ######################################################################
 
-def test_model(model, test_input, test_target):
+def test_model_ws(model, test_input, test_target):
     model.eval()
     
     # Number of pairs incorrectly identified
@@ -129,7 +127,7 @@ def compute_properties(lst):
     return mean, variance ** (1/2)
 
 def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target,
-                           test_input, test_target, test_classes, mini_batch_size=1000, nb_epochs=300):
+                           test_input, test_target, mini_batch_size=1000, nb_epochs=300):
     list_time = []
     list_acc_pairs = []
     
@@ -137,10 +135,11 @@ def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target,
             
     for i in range(nb_runs):
         model.load_state_dict(initial_model_wts)
-        model, time_elapsed = train_model(model, train_input, train_target, optimizer, mini_batch_size=mini_batch_size, criterion=torch.nn.CrossEntropyLoss(), nb_epochs=nb_epochs)
+        model, time_elapsed = train_model_ws(model, train_input, train_target, optimizer, 
+                                             mini_batch_size=mini_batch_size, nb_epochs=nb_epochs)
         list_time.append(time_elapsed)
         
-        acc_pairs = test_model(model, test_input, test_target)
+        acc_pairs = test_model_ws(model, test_input, test_target)
         list_acc_pairs.append(acc_pairs)
         
     mean_time, std_time = compute_properties(list_time)

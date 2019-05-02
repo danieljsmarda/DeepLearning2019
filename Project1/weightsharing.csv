@@ -1,2 +1,2 @@
 Model,Number of parameters,Training time,Mean accuracy (test set),Std accuracy
-NetSharing1,70318,165.56,0.7695,0.0007
+NetSharing1,70318,196.14,0.783,0.0014

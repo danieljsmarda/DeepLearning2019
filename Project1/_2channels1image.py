@@ -12,8 +12,9 @@ import copy
 nb_classes = 1
 nb_input_channels = 2 
 
-def train_model_2C(model, train_input, train_target, optimizer, mini_batch_size=1000, criterion=torch.nn.BCEWithLogitsLoss(), nb_epochs=300):
+def train_model_2C(model, train_input, train_target, optimizer, mini_batch_size=1000, nb_epochs=300):
     """ Network is a binary classifier: it simply predicts if the first digit is less than or equal to the second """
+    criterion = torch.nn.BCEWithLogitsLoss()
     train_target = train_target.type(torch.FloatTensor).view(-1, 1)
     nb_samples = len(train_input)
     
@@ -131,7 +132,7 @@ def compute_properties(lst):
     return mean, variance ** (1/2)
 
 def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target,
-                           test_input, test_target, test_classes, mini_batch_size=1000, nb_epochs=300):
+                           test_input, test_target, mini_batch_size=1000, nb_epochs=300):
     list_time = []
     list_acc_pairs = []
     
@@ -139,7 +140,7 @@ def multiple_training_runs(model, nb_runs, optimizer, train_input, train_target,
             
     for i in range(nb_runs):
         model.load_state_dict(initial_model_wts)
-        model, time_elapsed = train_model_2C(model, train_input, train_target, optimizer, mini_batch_size=mini_batch_size, criterion=torch.nn.BCEWithLogitsLoss(), nb_epochs=nb_epochs)
+        model, time_elapsed = train_model_2C(model, train_input, train_target, optimizer, mini_batch_size=mini_batch_size, nb_epochs=nb_epochs)
         list_time.append(time_elapsed)
         
         acc_pairs = test_model_2C(model, test_input, test_target)
