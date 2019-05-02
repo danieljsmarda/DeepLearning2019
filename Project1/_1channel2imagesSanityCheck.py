@@ -83,13 +83,19 @@ def compute_nb_errors(model, input_, target, mini_batch_size=1000):
     for b in range(0, input_.size(0), mini_batch_size):
         output = model(input_.narrow(0, b, mini_batch_size))
         target_classes = target.narrow(0, b, mini_batch_size)
+        
+        print("target_classes = ", target_classes[:10])
         _, predicted_classes = torch.max(output, 1)
+        print("predicted_classes = ", predicted_classes[:10])
         nb_errors += (predicted_classes != target_classes).sum().item()      
     return nb_errors
 
 def compare_pairs(model, input_):    
     tensor_a = torch.max(model(input_[:,0,:,:].view(-1,1,14,14)), 1)[1]
+    print("tensor_a = ", tensor_a[:10])
     tensor_b = torch.max(model(input_[:,1,:,:].view(-1,1,14,14)),1)[1]
+    print("tensor_b = ", tensor_b[:10])
+    print("torch.le(tensor_a, tensor_b) = ", torch.le(tensor_a, tensor_b)[:10])
     return torch.le(tensor_a, tensor_b)
 
 def test_model_1C(model, test_input, test_target, test_classes, mini_batch_size=1000):
@@ -101,12 +107,15 @@ def test_model_1C(model, test_input, test_target, test_classes, mini_batch_size=
     nb_errors_digits = compute_nb_errors(model, test_input_vanilla, test_classes_target, mini_batch_size)
     # Test accuracy on task = predicting digits
     acc_digits = 1 - nb_errors_digits / len(test_input_vanilla)
+    print("acc_digits = ", acc_digits)
     
     # Number of wrong predictions (first digit less than or equal to the second)
     test_output_pairs = compare_pairs(model, test_input).type(torch.LongTensor)
+    print("test_target = ", test_target[:10])
     nb_errors_pairs = (test_output_pairs != test_target).sum().item()
     # Test accuracy on task = comparison of pairs
     acc_pairs = 1 - nb_errors_pairs / len(test_input)
+    print("acc_pairs = ", acc_pairs)
     
     return acc_digits, acc_pairs
 
@@ -123,15 +132,14 @@ def check_overwrite(filename, model, row_to_write):
         row_list = list(reader)
         for index, row in enumerate(row_list):
             if row[0] == model.name: 
-                row_list[index] = row_to_write
-                overwrite = True           
+                row_list[index] = row
+                overwrite = True
                 break
     with open(filename, 'w') as writeFile:
-        print("Overwriting file")
         writer = csv.writer(writeFile)
         writer.writerows(row_list)
-    writeFile.close()
     readFile.close()
+    writeFile.close()
     return overwrite
     
 def write_to_csv(filename, model, test_results):
@@ -149,7 +157,6 @@ def write_to_csv(filename, model, test_results):
             writer = csv.writer(csvFile)
             writer.writerows(csvData)
         csvFile.close()
-        return
         
     overwrite = check_overwrite(filename, model, row)
     if overwrite == False:    
