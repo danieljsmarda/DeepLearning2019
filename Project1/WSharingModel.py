@@ -63,3 +63,4 @@ def compute_nb_errors(model, data_input, data_target, mini_batch_size):
 
     return nb_data_errors    
 
+
