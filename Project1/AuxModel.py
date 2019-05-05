@@ -3,6 +3,7 @@ from torch import *
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from torch.nn import functional as F
+import numpy as np
 
 
 
@@ -19,7 +20,7 @@ class AuxModel(nn.Module):
         self.full3 = nn.Linear(40,10)
         self.full4 = nn.Linear(20, 2)
         #self.full5 = nn.Linear(2,1)
-        self.criterion = nn
+        #self.criterion = nn
  
     def forward(self, x):
         a = x[:,0,:,:].view(-1,1,14,14)
@@ -44,10 +45,11 @@ class AuxModel(nn.Module):
         return output , channel1, channel2
 
 
-def train_model(model, optimizer,  train_input, train_target, train_class):
+def train_model_AM(model, optimizer,  train_input, train_target, train_class,epochs,batch_size):
 
-    nb_epochs = 25
-    mini_batch_size = 50
+    nb_epochs = epochs
+    mini_batch_size = batch_size
+    loss_graph = np.empty([2,nb_epochs])
     
 
     for e in range(0,nb_epochs):
@@ -65,9 +67,11 @@ def train_model(model, optimizer,  train_input, train_target, train_class):
             loss.backward()
             optimizer.step()
 
-
+        loss_graph[0][e] = e
+        loss_graph[1][e] = loss.data.item()    
         print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
 
+    return loss_graph    
 
 def compute_nb_errors(model, data_input, data_target, mini_batch_size):
 

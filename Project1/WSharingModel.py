@@ -2,65 +2,70 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from time import *
+import numpy as np
+from torch.nn import CrossEntropyLoss
 
-
-class NetSharing1(nn.Module):
+class WSModel(nn.Module):
     def __init__(self, nb_hidden=100):
-        super(NetSharing1, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
-        self.fc1 = nn.Linear(512, nb_hidden)
-        self.fc2 = nn.Linear(nb_hidden, 2)
+        super(WSModel, self).__init__()
+        self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
+        self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
+        self.full1 = nn.Linear(1024, nb_hidden)
+        self.full2 = nn.Linear(nb_hidden, 2)
  
-        self.criterion = nn.CrossEntropyLoss()
-        self.target_type = torch.LongTensor
  
     def forward(self, x):
-        x_0 = x[:,0,:,:].view(-1,1,14,14)
-        x_1 = x[:,1,:,:].view(-1,1,14,14)
-        x1 = F.relu(F.max_pool2d(self.conv1(x_0), kernel_size=2, stride=2))
-        x1 = F.relu(F.max_pool2d(self.conv2(x1), kernel_size=2, stride=2))
-        x1 = x1.view(-1, 256)
+        a = x[:,0,:,:].view(-1,1,14,14)
+        b = x[:,1,:,:].view(-1,1,14,14)
+
+        a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
+        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
+        
  
-        x2 = F.relu(F.max_pool2d(self.conv1(x_1), kernel_size=2, stride=2))
-        x2 = F.relu(F.max_pool2d(self.conv2(x2), kernel_size=2, stride=2))
-        x2 = x2.view(-1, 256)
- 
-        x = torch.cat((x1,x2),1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-    def predict(self, x):
-            return torch.max(self.forward(x), 1)[1]
+        output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
+        output = F.relu(self.full1(output))
+        output = self.full2(output)
+        return output
 
 
-def train_model(model, optimizer, nb_epochs, train_input, train_target ,mini_batch_size):
 
-    #start = time.time()
+def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_size):
+
+    nb_epochs = epochs
+    mini_batch_size = batch_size
+    loss_graph = np.empty([2,nb_epochs])
+    
+
     for e in range(0,nb_epochs):
         for b in range(0, train_input.size(0), mini_batch_size):
             output = model(train_input.narrow(0, b, mini_batch_size))
+            
             target = train_target.narrow(0, b, mini_batch_size)
-            loss = model.criterion(output, target)
+            cross = CrossEntropyLoss()
+            loss = cross(output, target)
+
             model.zero_grad()
             loss.backward()
             optimizer.step()
-    #end = time.time()
 
-        print(loss.data.item())
+        loss_graph[0][e] = e
+        loss_graph[1][e] = loss.data.item()    
+        print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
 
-    return 8#training_time
+    return loss_graph    
+
 
 def compute_nb_errors(model, data_input, data_target, mini_batch_size):
 
     nb_data_errors = 0
     for b in range(0, data_input.size(0), mini_batch_size):
-        pred = model.predict(data_input.narrow(0, b, mini_batch_size))
+        a = model(data_input.narrow(0, b, mini_batch_size))
+        val = torch.max(a,1)[1]
         for k in range(mini_batch_size):
-            if data_target.data[b + k] != pred[k]:
+            if data_target.data[b + k] != val[k]:
                 nb_data_errors = nb_data_errors + 1
 
-    return nb_data_errors    
-
+    return nb_data_errors
 
