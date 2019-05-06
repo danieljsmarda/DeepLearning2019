@@ -19,8 +19,6 @@ class AuxModel(nn.Module):
         self.full2 = nn.Linear(nb_hidden,40)
         self.full3 = nn.Linear(40,10)
         self.full4 = nn.Linear(20, 2)
-        #self.full5 = nn.Linear(2,1)
-        #self.criterion = nn
  
     def forward(self, x):
         a = x[:,0,:,:].view(-1,1,14,14)
@@ -40,12 +38,45 @@ class AuxModel(nn.Module):
  
         output = torch.cat((channel1,channel2),1)
         output = self.full4(output)
-        #output = torch.max(output, 1)[1]
 
         return output , channel1, channel2
 
 
-def train_model_AM(model, optimizer,  train_input, train_target, train_class,epochs,batch_size):
+
+
+class AuxModel1(nn.Module):
+
+    def __init__(self, nb_hidden=100):
+        super(AuxModel1, self).__init__()
+        self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
+        self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
+        self.full1 = nn.Linear(512, nb_hidden)
+        self.full2 = nn.Linear(nb_hidden, 10)
+        self.full3 = nn.Linear(20,2)
+ 
+ 
+    def forward(self, x):
+        a = x[:,0,:,:].view(-1,1,14,14)
+        b = x[:,1,:,:].view(-1,1,14,14)
+
+        a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
+        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
+        a = F.relu(self.full1(a.view(-1, 512)))
+        b = F.relu(self.full1(b.view(-1, 512)))
+
+        channel1 = F.relu(self.full2(a))
+        channel2 = F.relu(self.full2(b)) 
+
+        output = torch.cat((channel1,channel2),1)
+        output = self.full2(output)
+
+        return output , channel1 , channel2
+
+
+
+def train_model_AM(model, optimizer,  train_input, train_target, train_class,epochs,batch_size,type_of_loss,alpha,beta):
 
     nb_epochs = epochs
     mini_batch_size = batch_size
@@ -59,9 +90,9 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
             target = train_target.narrow(0, b, mini_batch_size)
             target1 = train_class.narrow(0,b,mini_batch_size).narrow(1,0,1)
             target2 = train_class.narrow(0,b,mini_batch_size).narrow(1,1,1)
-            #print(c1, target1.view(mini_batch_size), target1.view(mini_batch_size).shape)
-            cross = CrossEntropyLoss()
-            loss = (cross(c1, target1.view(mini_batch_size)) + cross(c2, target2.view(mini_batch_size))) + cross(output, target)
+            cross1 = type_of_loss[0]
+            cross2 = type_of_loss[1]
+            loss = beta*(cross(c1, target1.view(mini_batch_size)) + cross(c2, target2.view(mini_batch_size))) + alpha*cross(output, target)
 
             model.zero_grad()
             loss.backward()
@@ -71,7 +102,9 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
         loss_graph[1][e] = loss.data.item()    
         print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
 
-    return loss_graph    
+    return loss_graph
+
+
 
 def compute_nb_errors(model, data_input, data_target, mini_batch_size):
 

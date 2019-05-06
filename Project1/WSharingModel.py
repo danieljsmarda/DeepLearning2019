@@ -6,8 +6,35 @@ import numpy as np
 from torch.nn import CrossEntropyLoss
 
 class WSModel(nn.Module):
+
     def __init__(self, nb_hidden=100):
         super(WSModel, self).__init__()
+        self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
+        self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
+        self.full1 = nn.Linear(1024, nb_hidden)
+        self.full2 = nn.Linear(nb_hidden,10)
+        self.full3 = nn.Linear(nb_hidden, 2)
+ 
+ 
+    def forward(self, x):
+        a = x[:,0,:,:].view(-1,1,14,14)
+        b = x[:,1,:,:].view(-1,1,14,14)
+
+        a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
+        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
+        
+ 
+        output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
+        output = F.relu(self.full1(output))
+        output = self.full2(output)
+        return output
+
+class WSModel1(nn.Module):
+
+    def __init__(self, nb_hidden=100):
+        super(WSModel1, self).__init__()
         self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
         self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
         self.full1 = nn.Linear(1024, nb_hidden)
@@ -29,9 +56,7 @@ class WSModel(nn.Module):
         output = self.full2(output)
         return output
 
-
-
-def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_size):
+def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_size,type_of_loss):
 
     nb_epochs = epochs
     mini_batch_size = batch_size
@@ -43,7 +68,7 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
             output = model(train_input.narrow(0, b, mini_batch_size))
             
             target = train_target.narrow(0, b, mini_batch_size)
-            cross = CrossEntropyLoss()
+            cross = type_of_loss
             loss = cross(output, target)
 
             model.zero_grad()
@@ -52,7 +77,7 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
 
         loss_graph[0][e] = e
         loss_graph[1][e] = loss.data.item()    
-        print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
+        print("Loss at epoch {:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph    
 
