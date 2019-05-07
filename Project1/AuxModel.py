@@ -116,7 +116,6 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
             target1 = train_class.narrow(0,b,mini_batch_size).narrow(1,0,1)
             target2 = train_class.narrow(0,b,mini_batch_size).narrow(1,1,1)
             cross = type_of_loss
-            #cross2 = type_of_loss[1]
             loss = beta*(cross(c1, target1.view(mini_batch_size)) + cross(c2, target2.view(mini_batch_size))) + alpha*cross(output, target)
 
             model.zero_grad()
@@ -125,8 +124,8 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
 
         loss_graph[0][e] = e
         loss_graph[1][e] = loss.data.item() 
-        if (e == 0 or e == nb_epochs ):   
-            print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
+        if (e == 0 or e == nb_epochs-1 ):   
+            print("Loss at epoch {:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph
 

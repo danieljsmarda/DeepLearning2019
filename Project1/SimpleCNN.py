@@ -5,30 +5,42 @@ from time import *
 import numpy as np
 from torch.nn import CrossEntropyLoss
 
-class WSModel(nn.Module):
 
-    def __init__(self, nb_hidden=100):
+
+
+class SimpleModel(nn.Module):
+
+    def __init__(self, nb_hidden=128):
         super(WSModel, self).__init__()
-        self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
+        self.cl1 = nn.Conv2d(2, 64, kernel_size=3)
         self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
-        self.full1 = nn.Linear(1024, nb_hidden)
-        self.full2 = nn.Linear(nb_hidden,10)
-        self.full3 = nn.Linear(nb_hidden, 2)
+        self.full1 = nn.Linear(512, nb_hidden)
+        self.full2 = nn.Linear(nb_hidden,2)
  
  
     def forward(self, x):
+
+        output = F.relu(F.max_pool2d(self.cl1(x), kernel_size=2, stride=2))
+        output = F.relu(F.max_pool2d(self.cl2(output), kernel_size=2, stride=2))
+        output = F.relu(self.full1(output))
+        output = self.full2(output)
+
+
+
+
+        '''
         a = x[:,0,:,:].view(-1,1,14,14)
         b = x[:,1,:,:].view(-1,1,14,14)
 
         a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
-        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
         a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
         b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
         
  
         output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
         output = F.relu(self.full1(output))
-        output = self.full2(output)
+        output = self.full2(output)'''
         return output
 
     def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
@@ -43,47 +55,7 @@ class WSModel(nn.Module):
 
         return nb_data_errors
 
-
-class WSModel1(nn.Module):
-
-    def __init__(self, nb_hidden=100):
-        super(WSModel1, self).__init__()
-        self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
-        self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
-        self.full1 = nn.Linear(1024, nb_hidden)
-        self.full2 = nn.Linear(nb_hidden, 2)
- 
- 
-    def forward(self, x):
-        a = x[:,0,:,:].view(-1,1,14,14)
-        b = x[:,1,:,:].view(-1,1,14,14)
-
-        a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
-        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
-        a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
-        b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
-        
- 
-        output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
-        output = F.relu(self.full1(output))
-        output = self.full2(output)
-        return output
-
-
-    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
-
-        nb_data_errors = 0
-        for b in range(0, data_input.size(0), mini_batch_size):
-            a = model(data_input.narrow(0, b, mini_batch_size))
-            val = torch.max(a,1)[1]
-            for k in range(mini_batch_size):
-                if data_target.data[b + k] != val[k]:
-                    nb_data_errors = nb_data_errors + 1
-
-        return nb_data_errors
-   
-
-def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_size,type_of_loss):
+def train_model(model, optimizer,  train_input, train_target, epochs,batch_size,type_of_loss):
 
 
     nb_epochs = epochs
@@ -109,5 +81,4 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
             print("Loss at epoch {:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph    
-
 
