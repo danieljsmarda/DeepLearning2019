@@ -11,7 +11,7 @@ from torch.nn import CrossEntropyLoss
 class SimpleModel(nn.Module):
 
     def __init__(self, nb_hidden=128):
-        super(WSModel, self).__init__()
+        super(SimpleModel, self).__init__()
         self.cl1 = nn.Conv2d(2, 64, kernel_size=3)
         self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
         self.full1 = nn.Linear(512, nb_hidden)
@@ -19,10 +19,12 @@ class SimpleModel(nn.Module):
  
  
     def forward(self, x):
-
+        print(x.shape)
         output = F.relu(F.max_pool2d(self.cl1(x), kernel_size=2, stride=2))
+        print(output.shape)
         output = F.relu(F.max_pool2d(self.cl2(output), kernel_size=2, stride=2))
-        output = F.relu(self.full1(output))
+        print(output.shape)
+        output = F.relu(self.full1(output.view(-1, 512)))
         output = self.full2(output)
 
 
@@ -78,7 +80,7 @@ def train_model(model, optimizer,  train_input, train_target, epochs,batch_size,
         loss_graph[0][e] = e
         loss_graph[1][e] = loss.data.item()    
         if (e == 0 or e == nb_epochs-1 ):   
-            print("Loss at epoch {:3} : {:3}  ".format(e,loss.data.item()))
+            print("Loss at epoch{:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph    
 

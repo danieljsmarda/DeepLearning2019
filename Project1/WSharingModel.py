@@ -106,7 +106,7 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
         loss_graph[0][e] = e
         loss_graph[1][e] = loss.data.item()    
         if (e == 0 or e == nb_epochs-1 ):   
-            print("Loss at epoch {:3} : {:3}  ".format(e,loss.data.item()))
+            print("Loss at epoch{:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph    
 
