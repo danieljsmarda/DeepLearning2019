@@ -42,6 +42,20 @@ class AuxModel(nn.Module):
         return output , channel1, channel2
 
 
+    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
+
+        nb_data_errors = 0
+        for b in range(0, data_input.size(0), mini_batch_size):
+            a,_,_ = model(data_input.narrow(0, b, mini_batch_size))
+            val = torch.max(a,1)[1]
+            for k in range(mini_batch_size):
+                if data_target.data[b + k] != val[k]:
+                    nb_data_errors = nb_data_errors + 1
+
+        return nb_data_errors
+
+
+
 
 
 class AuxModel1(nn.Module):
@@ -70,10 +84,21 @@ class AuxModel1(nn.Module):
         channel2 = F.relu(self.full2(b)) 
 
         output = torch.cat((channel1,channel2),1)
-        output = self.full2(output)
+        output = self.full3(output)
 
         return output , channel1 , channel2
 
+    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
+
+        nb_data_errors = 0
+        for b in range(0, data_input.size(0), mini_batch_size):
+            a,_,_ = model(data_input.narrow(0, b, mini_batch_size))
+            val = torch.max(a,1)[1]
+            for k in range(mini_batch_size):
+                if data_target.data[b + k] != val[k]:
+                    nb_data_errors = nb_data_errors + 1
+
+        return nb_data_errors
 
 
 def train_model_AM(model, optimizer,  train_input, train_target, train_class,epochs,batch_size,type_of_loss,alpha,beta):
@@ -90,8 +115,8 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
             target = train_target.narrow(0, b, mini_batch_size)
             target1 = train_class.narrow(0,b,mini_batch_size).narrow(1,0,1)
             target2 = train_class.narrow(0,b,mini_batch_size).narrow(1,1,1)
-            cross1 = type_of_loss[0]
-            cross2 = type_of_loss[1]
+            cross = type_of_loss
+            #cross2 = type_of_loss[1]
             loss = beta*(cross(c1, target1.view(mini_batch_size)) + cross(c2, target2.view(mini_batch_size))) + alpha*cross(output, target)
 
             model.zero_grad()
@@ -99,8 +124,9 @@ def train_model_AM(model, optimizer,  train_input, train_target, train_class,epo
             optimizer.step()
 
         loss_graph[0][e] = e
-        loss_graph[1][e] = loss.data.item()    
-        print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
+        loss_graph[1][e] = loss.data.item() 
+        if (e == 0 or e == nb_epochs ):   
+            print("Loss at {:3} : {:3}  ".format(e,loss.data.item()))
 
     return loss_graph
 
