@@ -19,30 +19,12 @@ class SimpleModel(nn.Module):
  
  
     def forward(self, x):
-        print(x.shape)
+       
         output = F.relu(F.max_pool2d(self.cl1(x), kernel_size=2, stride=2))
-        print(output.shape)
         output = F.relu(F.max_pool2d(self.cl2(output), kernel_size=2, stride=2))
-        print(output.shape)
         output = F.relu(self.full1(output.view(-1, 512)))
         output = self.full2(output)
 
-
-
-
-        '''
-        a = x[:,0,:,:].view(-1,1,14,14)
-        b = x[:,1,:,:].view(-1,1,14,14)
-
-        a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
-        b = F.relu(F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
-        a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
-        b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
-        
- 
-        output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
-        output = F.relu(self.full1(output))
-        output = self.full2(output)'''
         return output
 
     def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
