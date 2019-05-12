@@ -29,7 +29,7 @@ class WSModel(nn.Module):
         output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
         output = F.relu(self.full1(output))
         output = F.relu(self.full2(output))
-        output =  self.full3(output)
+        output =  self.full3(outputç)
         return output
 
     def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):

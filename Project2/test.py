@@ -1,62 +1,43 @@
-from NeuralModel.NeuralModel import *
+# IMPORTS
+import math
+import torch
+from torch import FloatTensor, LongTensor, Tensor
+# our own written code
+import helpers as HL
 
 
+### Welcoming
+print('Linear, ReLU, Linear, ReLU, Linear, Tanh, Linear, Tanh')
+print('300 epochs')
+
+### Generate data
+inputs, targets = HL.generate_disc_data(n=1000)
 
 
-
-################## Genrate the dat set #################################3333
-
-data,label=generate_disc_set(2000)
-
-train_input = data[0:1000].view(1000,2)
-train_label = label[0:1000].long().view(1000,1)
-test_input = data[1000:2000].view(1000,2)
-test_label = label[1000:2000].long().view(1000,1)
-
-#########################################################################33
+### Split the dataset into train, validation and test set
+train_inputs, train_targets, validation_inputs, validation_targets, test_inputs, test_targets = HL.split_dataset(inputs, targets, train_perc=0.7, val_perc=0.1, test_perc=0.2)
 
 
-############### Instantiate a model #################################3333
-model = sequential(linear(2,25),Relu(),linear(25,25),Relu(),linear(25,25),Relu(),linear(25,25),Tanh(),linear(25,1),sigmoid())
-####################################################################################################33
+### Normalize data
+mu, std = inputs.mean(), inputs.std()
+train_inputs.sub_(mu).div_(std)
+validation_inputs.sub_(mu).div_(std)
+test_inputs.sub_(mu).div_(std)
 
 
-#################### Train model ###############################################333
-list_loss = train_model(model,train_input, train_label, mini_batch_size=1,epoch=75,learning_rate=0.00001)
+### Create model
+input_dim = 2
+hidden_width = 25
+output_dim = 2
 
-# plot training loss
+model = HL.Sequential([HL.Linear(input_dim, hidden_width), HL.ReLu(), HL.Linear(hidden_width, hidden_width), HL.ReLu(), HL.Linear(hidden_width, hidden_width), HL.Tanh(), HL.Linear(hidden_width, output_dim), HL.Tanh()])
 
+### Train model and log training and validation error
+model, train_error_list, test_error_list = HL.train_model(train_inputs, train_targets, validation_inputs, validation_targets, 
+                                                    model, learning_rate = 0.0001, epochs=300)
 
-plt.plot(list_loss[0:25],color='g' )
-plt.title('loss_plot for training')
-plt.xlabel('number of epochs')
-plt.ylabel("loss")
+### Print final training error
+print('train_error {:.02f}%'.format(train_error_list[-1]))
 
-###################################################################################3
-
-
-#################### Make prediction from model ####################################33
-print('shape of test input is  = ',test_input.shape) # shape of test set
-#### run forward pass to predict for a model after training
-print('Runing prediction for  model --------------#')
-pred=list(np.zeros(1000))
-for i in range(1000):
-    pred[i] = model.forward(test_input[i].view(2,1))[-1]
-
-print('shape of prediction output is -------------',len(pred)) 
-###########################################3 shape of test set##########################################################################3333
-
-####################### Compute error ############################################33
-print('computing accuracy of model after prediction ------------------------------#')
-err=0
-pred = np.asarray(pred)
-mask=pred>0.5
-pred1 = mask.astype(int)
-#print(pred1)
-#print(test_label.numpy().reshape(1000))
-err = np.sum(pred1!=test_label.numpy().reshape(1000))
-achievable_ = 1;
-accuracy = (achievable_ - err/pred1.shape) * 100
-#print('The total label the model got wrong ---------', err)
-print('accuracs of model is ---------', accuracy)
-#################################################################################3 
+### Test error
+HL.test_model(model, test_inputs, test_targets)
