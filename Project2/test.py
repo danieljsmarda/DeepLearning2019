@@ -44,7 +44,6 @@ print('We will be training the model for {:3} epochs with {:5} for learning rate
 model, train_error_list, test_error_list = help.train_model(train_data, train_targets, validation_data, validation_targets, 
                                                     model, learning_rate , epochs)
 
-#print('Here is the accuracy of our model on the Training_set: {:.02f}%'.format(train_error_list[-1]))
 
 '''Testing the model'''
 help.test_model(model, test_data, test_targets)

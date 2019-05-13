@@ -13,7 +13,7 @@ class WSModel(nn.Module):
         self.cl2 = nn.Conv2d(64, 128, kernel_size=3)
         self.full1 = nn.Linear(1024, nb_hidden)
         self.full2 = nn.Linear(nb_hidden,10)
-        self.full3 = nn.Linear(nb_hidden, 2)
+        self.full3 = nn.Linear(10, 2)
  
  
     def forward(self, x):
@@ -29,10 +29,10 @@ class WSModel(nn.Module):
         output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
         output = F.relu(self.full1(output))
         output = F.relu(self.full2(output))
-        output =  self.full3(outputç)
+        output = self.full3(output)
         return output
 
-    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
+    def test_model(self,model, data_input, data_target, mini_batch_size):
 
         nb_data_errors = 0
         for b in range(0, data_input.size(0), mini_batch_size):
@@ -71,7 +71,7 @@ class WSModel1(nn.Module):
         return output
 
 
-    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
+    def test_model(self,model, data_input, data_target, mini_batch_size):
 
         nb_data_errors = 0
         for b in range(0, data_input.size(0), mini_batch_size):
@@ -90,6 +90,7 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
     nb_epochs = epochs
     mini_batch_size = batch_size
     loss_graph = np.empty([2,nb_epochs])
+    acc_epochs = []
     
 
     for e in range(0,nb_epochs):
@@ -108,7 +109,7 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
         loss_graph[1][e] = loss.data.item()    
         if (e == 0 or e == nb_epochs-1 ):   
             print("Loss at epoch{:3} : {:3}  ".format(e,loss.data.item()))
-
-    return loss_graph    
+        acc_epochs.append(model.test_model(model, train_input, train_target, mini_batch_size) / train_input.size(0) * 100)
+    return loss_graph , acc_epochs  
 
 

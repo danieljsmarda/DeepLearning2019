@@ -27,7 +27,7 @@ class SimpleModel(nn.Module):
 
         return output
 
-    def compute_nb_errors(self,model, data_input, data_target, mini_batch_size):
+    def test_model(self,model, data_input, data_target, mini_batch_size):
 
         nb_data_errors = 0
         for b in range(0, data_input.size(0), mini_batch_size):
@@ -46,7 +46,7 @@ def train_model(model, optimizer,  train_input, train_target, epochs,batch_size,
     mini_batch_size = batch_size
     loss_graph = np.empty([2,nb_epochs])
     
-
+    acc_epochs = []
     for e in range(0,nb_epochs):
         for b in range(0, train_input.size(0), mini_batch_size):
             output = model(train_input.narrow(0, b, mini_batch_size))
@@ -63,6 +63,6 @@ def train_model(model, optimizer,  train_input, train_target, epochs,batch_size,
         loss_graph[1][e] = loss.data.item()    
         if (e == 0 or e == nb_epochs-1 ):   
             print("Loss at epoch{:3} : {:3}  ".format(e,loss.data.item()))
-
-    return loss_graph    
+        acc_epochs.append(model.test_model(model, train_input, train_target, mini_batch_size) / train_input.size(0) * 100)
+    return loss_graph , acc_epochs    
 
