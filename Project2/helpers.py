@@ -12,13 +12,15 @@ random.seed(7)
 # Data creation/handling ------------------------------------------------------
 
 def generate_disc_data(n=1000):
-    """
-    Generates a dataset with a uniformly sampled data in the range [0,1] in two dimensions, with labels beeing 1 inside
-    a circle with radius 1/sqrt(2*pi) and labels with 1 on the inside and 0 on the outside of the circle.
+    """Generates uniformly sampled data.
+
+    Generates a dataset with a uniformly sampled data in the range [0,1] in two
+    dimensions, with labels beeing 1 inside a circle with radius 1/sqrt(2*pi)
+    and 0 if outside the circle.
     
     Output:
     inputs  : nx2 dimension FloatTensor
-    targets : nx1 dimension LongTensor with range [0,1] 
+    targets : nx1 dimension LongTensor with range {0,1} 
     """
     
     inputs = torch.rand(n,2)
@@ -28,8 +30,7 @@ def generate_disc_data(n=1000):
 
 
 def generate_linear_data(n=1000):
-    """
-    Generates an example dataset that can be seperated linearly
+    """Generates an example dataset that can be seperated linearly.
     
     Output:
     inputs  : nx2 dimension FloatTensor
@@ -43,11 +44,10 @@ def generate_linear_data(n=1000):
 
 
 def split_data(inputs, targets, train_part, val_part, test_part):
-    """
-    Splits dataset into training, validation and test set
+    """Splits dataset into training, validation and test set.
     
     Output:
-    train-, validation- and test inputs  : (percentage * n)x2 dimension FloatTensor
+    train-, validation- and test data  : (percentage * n)x2 dimension FloatTensor
     train-, validation- and test targets : (percentage * n)x1 dimension LongTensor
     """
     training_size = math.floor(inputs.size()[0] * train_part)
@@ -68,11 +68,10 @@ def split_data(inputs, targets, train_part, val_part, test_part):
 
     
 def convert_labels(input, target):
-    """
-    Convertes targets to labels of -1 and 1.
+    """Converts targets from {0,1} labels to {-1,1} labels.
     
     Output:
-    one_hot_labels : nx2 dimension FloatTensor 
+    new_target : nx2 dimension FloatTensor 
     """
     new_target = input.new(target.size(0), target.max() + 1).fill_(-1)
     new_target.scatter_(1, target.view(-1, 1), 1.0)
@@ -317,7 +316,7 @@ def train_model(train_data, train_targets, test_data, test_targets, model, learn
     train error :  List object 
     test error  :  List object 
     """   
-    # make train targets and test targets to 1-hot vector
+    # make train targets and test targets elts of {-1,1}
     train_targets = convert_labels(train_data, train_targets)
     test_targets = convert_labels(test_data, test_targets)    
     
