@@ -35,6 +35,9 @@ def split_data(inputs, targets, train_part, val_part, test_part):
     train-, validation- and test data  : (percentage * n)x2 dimension FloatTensor
     train-, validation- and test targets : (percentage * n)x1 dimension LongTensor
     """
+    if (train_part + val_part + test_part > 1):
+        raise ValueError('Requested data partitions too large.')
+        
     training_size = math.floor(inputs.size()[0] * train_part)
     train_data = inputs.narrow(0, 0, training_size)
     train_targets = targets.narrow(0, 0, training_size)
@@ -58,7 +61,6 @@ def convert_labels(input, target):
     Output:
     new_target : nx2 dimension FloatTensor 
     """
-    #new_target = input.new(target.size(0), target.max() + 1).fill_(-1)
     new_target = input.new_zeros((target.size(0), target.max() + 1)).fill_(-1)
     new_target.scatter_(1, target.view(-1, 1), 1.0)
     return new_target
@@ -74,11 +76,11 @@ class Module (object) :
     def __init__(self):
         self._author = 'Youssef Janjar and Daniel Smarda'
     
-    def forward ( self , * input ) :
+    def forward (self, *input) :
         """ `forward` should get for input, and returns, a tensor or a tuple of tensors """
         raise NotImplementedError
         
-    def backward ( self , * gradwrtoutput ) :
+    def backward (self, *gradwrtoutput) :
         """
         `backward` should get as input a tensor or a tuple of tensors containing the gradient of the loss 
         with respect to the module’s output, accumulate the gradient wrt the parameters, and return a 
@@ -86,7 +88,7 @@ class Module (object) :
         """
         raise NotImplementedError
         
-    def param ( self ) :
+    def param (self) :
         """ 
         `param` should return a list of pairs, each composed of a parameter tensor, and a gradient tensor 
         of same size. This list should be empty for parameterless modules (e.g. activation functions). 
@@ -263,7 +265,7 @@ class Sequential(Module):
         for module in reversed_modules:
             out = module.backward(out)
     
-    def param ( self ) :
+    def param (self) :
 
         parameters = []
 
