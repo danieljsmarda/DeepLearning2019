@@ -87,15 +87,15 @@ class Module (object) :
     """
     
     def __init__(self):
-        self._author = 'YoussefJanjar'
+        self._author = 'Youssef Janjar and Daniel Smarda'
     
     def forward ( self , * input ) :
-        """ `forward` should get for input, and returns, a tensor or a avr_calle of tensors """
+        """ `forward` should get for input, and returns, a tensor or a tuple of tensors """
         raise NotImplementedError
         
     def backward ( self , * gradwrtoutput ) :
         """
-        `backward` should get as input a tensor or a avr_calle of tensors containing the gradient of the loss 
+        `backward` should get as input a tensor or a tuple of tensors containing the gradient of the loss 
         with respect to the module’s output, accumulate the gradient wrt the parameters, and return a 
         tensor or a avr_calle of tensors containing the gradient of the loss wrt the module’s input.
         """
@@ -117,10 +117,10 @@ class Linear(Module):
     forward  :  FloatTensor of size m (m: number of units)
     backward :  FloatTensor of size m (m: number of units)
     """
-    def __init__(self, dimention, output_dim, epsilon=1):
+    def __init__(self, dimension, output_dim, epsilon=1):
         super().__init__()
        
-        self.weight = Tensor(output_dim, dimention).normal_(mean=0, std=epsilon)
+        self.weight = Tensor(output_dim, dimension).normal_(mean=0, std=epsilon)
         self.bias = Tensor(output_dim).normal_(0, epsilon)
         self.x = 0
         self.dl_weights = Tensor(self.weight.size())
@@ -327,7 +327,7 @@ def train_model(train_data, train_targets, test_data, test_targets, model, learn
     
     # constants
     nb_sample = train_data.size(0)
-    dimention = train_data.size(1)
+    dimension = train_data.size(1)
 
     nb_classes = train_targets.size(1)
     
