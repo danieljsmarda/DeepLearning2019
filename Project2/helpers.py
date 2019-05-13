@@ -28,21 +28,6 @@ def generate_disc_data(n=1000):
     targets = distance.mul(math.sqrt(2*math.pi)).sub(1).sign().add(1).div(2).long()
     return inputs, targets
 
-
-def generate_linear_data(n=1000):
-    """Generates an example dataset that can be seperated linearly.
-    
-    Output:
-    inputs  : nx2 dimension FloatTensor
-    targets : nx1 dimension LongTensor with range [0,1] 
-    """
-    
-    inputs = torch.rand(n,2)
-    targets = torch.sum(inputs, dim=1).sub(0.9).sign().sub(1).div(2).abs().long().view(-1, 1)
-    return inputs, targets
-
-
-
 def split_data(inputs, targets, train_part, val_part, test_part):
     """Splits dataset into training, validation and test set.
     
