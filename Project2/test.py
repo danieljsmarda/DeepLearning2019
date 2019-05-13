@@ -1,8 +1,5 @@
 import helpers as help
 import random
-import math
-import torch
-from torch import FloatTensor, LongTensor, Tensor
 
 #Setting the seed.
 random.seed(7)
