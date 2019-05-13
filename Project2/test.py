@@ -32,7 +32,7 @@ number_of_units = 25
 number_of_outputs = 2
 
 learning_rate = 0.0001
-epochs = 300
+epochs = 100
 
 model = help.Sequential([help.Linear(number_of_inputs, number_of_units), help.ReLu(), help.Linear(number_of_units, number_of_units), help.ReLu(), help.Linear(number_of_units, number_of_units), help.Tanh(), help.Linear(number_of_units, number_of_outputs), help.Tanh()])
 

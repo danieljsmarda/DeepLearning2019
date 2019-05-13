@@ -22,8 +22,8 @@ def generate_disc_data(n=1000):
     """
     
     inputs = torch.rand(n,2)
-    distance = torch.norm((inputs - torch.Tensor([[0.5, 0.5]])).abs(), 2, 1, True)
-    targets = distance.mul(math.sqrt(2*math.pi)).sub(1).sign().sub(1).div(2).abs().long()
+    distance = torch.norm((inputs - torch.Tensor([[0.5, 0.5]])), 2, 1, True)
+    targets = distance.mul(math.sqrt(2*math.pi)).sub(1).sign().add(1).div(2).long()
     return inputs, targets
 
 
