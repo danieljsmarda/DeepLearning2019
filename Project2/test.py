@@ -1,11 +1,11 @@
 import helpers as help
-import random 
+import random
 import math
 import torch
 from torch import FloatTensor, LongTensor, Tensor
 
 #Setting the seed.
-random.seed(7) 
+random.seed(7)
 
 
 
@@ -32,7 +32,7 @@ number_of_units = 25
 number_of_outputs = 2
 
 learning_rate = 0.0001
-epochs = 100
+epochs = 50
 
 model = help.Sequential([help.Linear(number_of_inputs, number_of_units), help.ReLu(), help.Linear(number_of_units, number_of_units), help.ReLu(), help.Linear(number_of_units, number_of_units), help.Tanh(), help.Linear(number_of_units, number_of_outputs), help.Tanh()])
 

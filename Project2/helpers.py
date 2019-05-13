@@ -73,7 +73,8 @@ def convert_labels(input, target):
     Output:
     new_target : nx2 dimension FloatTensor 
     """
-    new_target = input.new(target.size(0), target.max() + 1).fill_(-1)
+    #new_target = input.new(target.size(0), target.max() + 1).fill_(-1)
+    new_target = input.new_zeros((target.size(0), target.max() + 1)).fill_(-1)
     new_target.scatter_(1, target.view(-1, 1), 1.0)
     return new_target
 
