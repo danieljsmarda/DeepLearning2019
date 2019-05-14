@@ -1,8 +1,11 @@
 import helpers as hs
 import random
-
+import torch
 # Setting the seed.
 random.seed(7)
+
+# Turn off autograd
+torch.set_grad_enabled(False)
 
 # Generate data
 inputs, targets = hs.generate_disc_data(n=1000)

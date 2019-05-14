@@ -5,8 +5,11 @@ import math
 import time
 
 
-#Setting the seed.
-random.seed(7) 
+# Setting the seed.
+random.seed(7)
+
+# Turn off autograd.
+torch.set_grad_enabled(False)
 
 
 # Data creation/handling ------------------------------------------------------
