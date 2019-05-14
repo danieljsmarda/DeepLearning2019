@@ -68,9 +68,6 @@ for j in range(0,5):
                 train_accs.append(acc)
             #print("model:",model)
             print_results(model,op,learning_rates[i],NB_EPOCHS,MINI_BATCH_SIZE, train_input, train_target,test_input, test_target)
-            #visualize_loss(model,loss_aux,learning_rates[i]) Uncomment this line if you want to see the evolution the loss duting training.
-
-
-
-
+            # Uncomment this line if you want to see the evolution the loss duting training.
+            #visualize_loss(model,loss_aux,learning_rates[i])
 
