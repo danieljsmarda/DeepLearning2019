@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 
-
 #### Function that draws the evolution of the loss during training.
 def visualize_loss(model,loss_model,lr):
     plt.plot(loss_model[0],loss_model[1], color='orange')

@@ -1,24 +1,22 @@
+# Import PyTorch tools
 from torchvision import datasets
 import torch
-import dlc_practical_prologue as prologue
-import matplotlib.pyplot as plt
-
-# Import all models
-from WSharingModel import *
-from AuxModel import *
-from SimpleCNN import *
-
-from helpers import *
 from torch import nn, optim
 from torch.autograd import Variable
-from torch.nn import CrossEntropyLoss
-from torch.nn import BCEWithLogitsLoss
-import torch
-from torchvision import datasets
-from torch import optim
+from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss
 import dlc_practical_prologue as prologue
 from torch.autograd import Variable
 from torch.nn import functional as F
+# Import external plotting and helper functions
+import matplotlib.pyplot as plt
+import dlc_practical_prologue as prologue
+# Import self-written models and helper functions
+from WSharingModel import *
+from AuxModel import *
+from SimpleCNN import *
+from helpers import *
+
+
 
 ### Import models and load data.
 train_input, train_target, train_classes, test_input, test_target, test_classes = \
@@ -50,24 +48,27 @@ beta = 0.5
 
 ### Training of Different Models and Results on Training and Testing set.
 train_accs = []
+# J index helps determine which training module to use based on the specified model.
 for j in range(0,5):
         for i in range(len(learning_rates)):
             models = [WSModel(),WSModel1(),AuxModel(),AuxModel1(),SimpleModel()]
             model = models[j]
             optimizer = op(model.parameters(),lr = learning_rates[i])
+            # For the weight-sharing models
             if (j<2):
-                #print("here")
                 loss_aux,acc = train_model_WS(model, optimizer,  train_input, train_target, NB_EPOCHS, MINI_BATCH_SIZE,losses[0])
                 train_accs.append(acc)
+            # For the Auxiliary Loss models
             elif(j>1 and j!=4):
-                #print("here here")
                 loss_aux,acc = train_model_AM(model, optimizer,  train_input, train_target, train_classes,NB_EPOCHS, MINI_BATCH_SIZE,losses[0],alpha,beta)
                 train_accs.append(acc)
+            # For the Base (Simple) model
             elif(j==4):
                 loss_aux,acc = train_model(model, optimizer,  train_input, train_target, NB_EPOCHS, MINI_BATCH_SIZE,losses[0])
                 train_accs.append(acc)
-            #print("model:",model)
+                
             print_results(model,op,learning_rates[i],NB_EPOCHS,MINI_BATCH_SIZE, train_input, train_target,test_input, test_target)
+
             # Uncomment this line if you want to see the evolution the loss duting training.
             #visualize_loss(model,loss_aux,learning_rates[i])
 

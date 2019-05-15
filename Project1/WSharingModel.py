@@ -17,21 +17,26 @@ class WSModel(nn.Module):
  
  
     def forward(self, x):
+        # Split input into 2 separate channels, 1 for each digit.
         a = x[:,0,:,:].view(-1,1,14,14)
         b = x[:,1,:,:].view(-1,1,14,14)
 
+        # Since channel a and channel b use same layers, the weights are shared
+        # between them. 
         a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
-        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
         a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
         b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
         
- 
+        # Concatenate the two channels before passing them through the fully
+        # connected layer.
         output = torch.cat((a.view(-1, 512),b.view(-1, 512)),1)
         output = F.relu(self.full1(output))
         output = F.relu(self.full2(output))
         output = self.full3(output)
         return output
 
+    # Identical to SimpleCNN.test_model
     def test_model(self,model, data_input, data_target, mini_batch_size):
 
         nb_data_errors = 0
@@ -44,9 +49,11 @@ class WSModel(nn.Module):
 
         return nb_data_errors
 
-
+# This class is identical to the previous one except for the stride and
+# kernel size.
 class WSModel1(nn.Module):
 
+    # Identical as WSModel.__init__ except for kernel_size
     def __init__(self, nb_hidden=100):
         super(WSModel1, self).__init__()
         self.cl1 = nn.Conv2d(1, 64, kernel_size=3)
@@ -54,13 +61,13 @@ class WSModel1(nn.Module):
         self.full1 = nn.Linear(1024, nb_hidden)
         self.full2 = nn.Linear(nb_hidden, 2)
  
- 
+    # Identical to WSModel.forward
     def forward(self, x):
         a = x[:,0,:,:].view(-1,1,14,14)
         b = x[:,1,:,:].view(-1,1,14,14)
 
         a = F.relu(F.max_pool2d(self.cl1(a), kernel_size=2, stride=2))
-        b = F.relu( F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
+        b = F.relu(F.max_pool2d(self.cl1(b), kernel_size=2, stride=2))
         a = F.relu(F.max_pool2d(self.cl2(a), kernel_size=2, stride=2))
         b = F.relu(F.max_pool2d(self.cl2(b), kernel_size=2, stride=2))
         
@@ -70,7 +77,7 @@ class WSModel1(nn.Module):
         output = self.full2(output)
         return output
 
-
+    # Identical to WSModel.test_model
     def test_model(self,model, data_input, data_target, mini_batch_size):
 
         nb_data_errors = 0
@@ -83,8 +90,8 @@ class WSModel1(nn.Module):
 
         return nb_data_errors
    
-
-def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_size,type_of_loss):
+# Identical to SimpleCNN.train_model
+def train_model_WS(model, optimizer, train_input, train_target, epochs, batch_size, type_of_loss):
 
 
     nb_epochs = epochs
@@ -107,9 +114,9 @@ def train_model_WS(model, optimizer,  train_input, train_target, epochs,batch_si
 
         loss_graph[0][e] = e
         loss_graph[1][e] = loss.data.item()    
-        if (e == 0 or e == nb_epochs-1 ):   
+        if (e == 0 or e == nb_epochs-1):   
             print("Loss at epoch{:3} : {:3}  ".format(e,loss.data.item()))
         acc_epochs.append(model.test_model(model, train_input, train_target, mini_batch_size) / train_input.size(0) * 100)
-    return loss_graph , acc_epochs  
+    return loss_graph, acc_epochs  
 
 
