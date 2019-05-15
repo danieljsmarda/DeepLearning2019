@@ -122,7 +122,7 @@ class Linear(Module):
         self.dl_bias.add_(grd_of_output)
         return self.weight.t().mv(grd_of_output)
     
-    def param (self):
+    def param(self):
         return [(self.weight, self.dl_weights), (self.bias, self.dl_bias)]
         
 
@@ -316,14 +316,13 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
     
     # constants
     NB_SAMPLE = train_data.size(0)
-    dimension = train_data.size(1)
 
-    nb_classes = train_targets.size(1)
+    #dimension = train_data.size(1)
+    #nb_classes = train_targets.size(1)
     
     
     test_error_values = []
     train_error_values = []
-
 
     start = time.time()
 
