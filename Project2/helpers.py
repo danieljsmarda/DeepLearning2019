@@ -9,7 +9,7 @@ import time
 random.seed(7) 
 
 
-# Data creation/handling ------------------------------------------------------
+# Defining our function that handles the data.
 
 def generate_disc_data(n=1000):
     """Generates uniformly sampled data.
@@ -18,10 +18,7 @@ def generate_disc_data(n=1000):
     dimensions, with labels beeing 1 inside a circle with radius 1/sqrt(2*pi)
     and 0 if outside the circle.
     
-    Output:
-    inputs  : nx2 dimension FloatTensor
-    targets : nx1 dimension LongTensor with range {0,1} 
-    """
+   """
     
     inputs = torch.rand(n,2)
     distance = torch.norm((inputs - torch.Tensor([[0.5, 0.5]])), 2, 1, True)
@@ -30,10 +27,6 @@ def generate_disc_data(n=1000):
 
 def split_data(inputs, targets, train_part, val_part, test_part):
     """Splits dataset into training, validation and test set.
-    
-    Output:
-    train-, validation- and test data  : (percentage * n)x2 dimension FloatTensor
-    train-, validation- and test targets : (percentage * n)x1 dimension LongTensor
     """
     if (train_part + val_part + test_part > 1):
         raise ValueError('Requested data partitions too large.')
@@ -56,21 +49,22 @@ def split_data(inputs, targets, train_part, val_part, test_part):
 
     
 def convert_labels(input, target):
-    """Converts targets from {0,1} labels to {-1,1} labels.
-    
-    Output:
-    new_target : nx2 dimension FloatTensor 
+
+    """
+    Converts targets from 0,1 labels to -1,1 labels.
+
     """
     new_target = input.new_zeros((target.size(0), target.max() + 1)).fill_(-1)
     new_target.scatter_(1, target.view(-1, 1), 1.0)
     return new_target
 
 
-# Modules ---------------------------------------------------------------------
+# Here We define our Modules.
 
 class Module (object) :
     """
-    Base class for other neural network modules to inherit from
+    Base class for other neural network modules to inherit from.
+
     """
     
     def __init__(self):
@@ -99,10 +93,7 @@ class Module (object) :
 class Linear(Module):
     """
     Fully connected layer.
-    
-    Outputs:
-    forward  :  FloatTensor of size m (m: number of units)
-    backward :  FloatTensor of size m (m: number of units)
+
     """
     def __init__(self, dimension, output_dim, epsilon=1):
         super().__init__()
@@ -128,11 +119,8 @@ class Linear(Module):
 
 class Tanh(Module):
     """
-    Activation module: Tanh 
-    
-    Outputs:
-    forward  :  FloatTensor of size m (m: number of units)
-    backward :  FloatTensor of size m (m: number of units)
+    Activation module: Tanh.
+
     """
     
     def __init__(self):
@@ -142,7 +130,7 @@ class Tanh(Module):
     def forward(self, input):
         self.s = input
         
-        # We run Tanh function elementwise on all of input.
+        # We run Tanh function elementwise.
         tanh_vector = []
         for x in input:
             tanh = (2/ (1 + math.exp(-2*x))) -1
@@ -160,15 +148,12 @@ class Tanh(Module):
 class ReLu(Module):
     """
     Activation module: ReLu
-    
-    Outputs:
-    forward  :   FloatTensor of size m (m: number of units)
-    backward :   FloatTensor of size m (m: number of units)
+
     """
     def __init__(self):
         super().__init__()
         self.s = 0
-    #Applies the ReLu function to the input.    
+
     def forward(self, input):
         self.s = input
         relu = input.clamp(min=0)
@@ -207,7 +192,10 @@ class SGD():
                     weight.add_(-self.lr * grad)
     
     def zero_grad(self):
-        """Clears the gradients in all the modules parameters"""
+        """
+        Clears the gradients in all the modules parameters.
+
+        """
 
         for module in self.params:
             for avr_cal in module:  
@@ -222,15 +210,12 @@ class SGD():
 
 
 
-# Sequential ------------------------------------------------------------------
+## We define the Sequential class.
 
 class Sequential(Module):
     """
-    Combinaition of multiple modules/layers sequentially.
-    
-    Outputs:
-    parameters: List object containing List objects with the parameters 
-        of the modules in the Sequential instance. 
+    Combinaition of modules sequentially.
+   
     """
 
     def __init__(self, *args):
@@ -277,7 +262,7 @@ class Sequential(Module):
 
         
         
-# Lossfunction ----------------------------------------------------------------
+# We define our loss function and its derivative.
 
 def loss(pred,target):
 
@@ -301,25 +286,16 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
     """
     Trains the model and outputs the training and validation error.
 
-    Output:
-    model       :  Sequential object
-    train error :  List object 
-    test error  :  List object 
     """   
-    # make train targets and test targets elts of {-1,1}
+    # Convert the targets to labels.
     train_targets = convert_labels(train_data, train_targets)
     test_targets = convert_labels(test_data, test_targets)    
     
     
-    # define optimizer
+    # SGD as our optimizer
     sgd = SGD(model.param(), lr=learning_rate)
     
-    # constants
-    NB_SAMPLE = train_data.size(0)
-
-    #dimension = train_data.size(1)
-    #nb_classes = train_targets.size(1)
-    
+    NB_SAMPLE = train_data.size(0) 
     
     test_error_values = []
     train_error_values = []
@@ -338,8 +314,6 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
             # 2.(inside loop with samples = SGD).
             sgd.zero_grad()
             
-            ### In order to get nb_train_errors, check how many true_target
-            ### are correctly classified.
             
             # Get index of true_target, by taking argmax.
             curr_TT = train_targets[n]
@@ -355,8 +329,7 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
             # Compute our prediction.
             prediction = output_list.index(max(output_list))
             
-            # Check if predicted true_target correctly;
-            # if not, increment the number of errors.
+            # Check if the prediction is correct.
             if int(true_target) != int(prediction): nb_train_errors += 1
 
 
@@ -380,12 +353,11 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
         train_error_values.append(train_acc)
 
 
-        # Validation ----------------------------------------------------------
+        # Here we run the model on the validation set.
         nb_valid_errors = 0
         
 
-        # Here we do the exact same thing as for the training but
-        # without calculating the loss or updating the weights.
+        # Here we do the exact same thing as for the training without updating the weights because it's the validation.
         for n in range(0, test_data.size(0)):
             
             
@@ -406,7 +378,7 @@ def train_model(train_data, train_targets, test_data, test_targets, model,
 
         # Here we print the performance values to keep track of 
         # how the training is going.
-        if epoch % (epochs*0.03) == 0:
+        if epoch % (epochs*0.25) == 0:
             print('We are at epoch : {:d};  Training loss: {:.02f}; \
                   Training accuracy: {:.02f}%;   Validation accuracy {:.02f}%.'
               .format(epoch,

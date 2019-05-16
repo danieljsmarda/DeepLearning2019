@@ -25,7 +25,7 @@ print(inputs.shape, targets.shape)
 display_data = False
 display_results = False
 ReluModel = False
-compare = True
+compare = False
 
 # Plot the distribution of data points.
 if (display_data == True):
@@ -49,7 +49,7 @@ validation_data.sub_(mean).div_(std)
 test_data.sub_(mean).div_(std)
 
 
-'''
+
 
 # We initiate the model with this set of parameters.
 NB_INPUTS = 2
@@ -107,7 +107,7 @@ if(display_results == True):
 
 # Test the model.
 tool.test_model(model, test_data, test_targets)
-'''
+
 if(compare == True):
 
     # We will try to compare the performance of our model with the sklear LR classifiers with default parameters.
