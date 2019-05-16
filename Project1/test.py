@@ -34,7 +34,7 @@ test_input, test_target = Variable(test_input), Variable(test_target)
 
 
 ### We define our Learning parameters.
-NB_EPOCHS = 50
+NB_EPOCHS = 25
 MINI_BATCH_SIZE = 100
 learning_rates = [0.1]
 

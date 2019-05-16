@@ -1,2 +1,0 @@
-Model,Number of parameters,Training time,Mean digits accuracy (test set),Std digits accuracy,Mean accuracy (test set),Std accuracy
-ConvNet1_1C,72226,436.95,0.8707,0.0018,0.912,0.0042
